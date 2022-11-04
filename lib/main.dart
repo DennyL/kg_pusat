@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kg_pusat/globals.dart';
 import 'package:kg_pusat/pages/authentication/signin.dart';
 import 'package:kg_pusat/pages/dashboard.dart';
-import 'package:kg_pusat/pages/home/home.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'themes/colors.dart';

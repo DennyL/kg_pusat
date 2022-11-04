@@ -1,5 +1,4 @@
 //ignore_for_file: todo
-import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kg_pusat/globals.dart';
@@ -46,8 +45,6 @@ class _DashboardNavigationState extends State<DashboardNavigation> {
     return Scaffold(
       appBar: deviceWidth < 800
           ? AppBar(
-              // backgroundColor: scaffoldBackgroundColor,
-              // elevation: 0,
               iconTheme: IconThemeData(
                 color: navButtonPrimaryVariant,
               ),
@@ -243,7 +240,7 @@ class NavigationScreen extends StatelessWidget {
           case 1:
             return const KeuanganPage();
           case 2:
-            return const CabangPage();
+            return const AdminControllerCabangPage();
           case 3:
             return const PengaturanPage();
           default:

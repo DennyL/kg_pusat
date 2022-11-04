@@ -7,6 +7,12 @@ import 'package:kg_pusat/themes/colors.dart';
 import 'package:kg_pusat/widgets/widgets/responsivetext.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypt/crypt.dart';
+
+encryptPassword(password) {
+  final encrypted = Crypt.sha256(password, salt: 'abcdefghijklmnop');
+  return encrypted;
+}
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -251,8 +257,10 @@ class _SignInPageState extends State<SignInPage> {
                                 children: [
                                   ElevatedButton(
                                     onPressed: () {
-                                      getAuth(_controllerUsername.text,
-                                              _controllerPassword.text)
+                                      getAuth(
+                                              _controllerUsername.text,
+                                              encryptPassword(
+                                                  _controllerPassword.text))
                                           .then((value) {
                                         if (value) {
                                           context
@@ -284,8 +292,10 @@ class _SignInPageState extends State<SignInPage> {
                                   children: [
                                     ElevatedButton(
                                       onPressed: () {
-                                        getAuth(_controllerUsername.text,
-                                                _controllerPassword.text)
+                                        getAuth(
+                                                _controllerUsername.text,
+                                                encryptPassword(
+                                                    _controllerPassword.text))
                                             .then((value) {
                                           if (value) {
                                             context
@@ -309,9 +319,6 @@ class _SignInPageState extends State<SignInPage> {
                               ],
                             ),
                           ),
-                    const SizedBox(
-                      height: 25,
-                    ),
                     const SizedBox(
                       height: 90,
                     ),

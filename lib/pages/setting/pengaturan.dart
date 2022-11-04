@@ -11,7 +11,7 @@ class PengaturanPage extends StatefulWidget {
 class _PengaturanPageState extends State<PengaturanPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(
         child: Text("Pengaturan Disini"),
       ),
