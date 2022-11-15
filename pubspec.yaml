@@ -55,6 +55,10 @@ dependencies:
   sidebarx: ^0.14.0
   syncfusion_flutter_charts: ^20.3.52
   toggle_switch: ^2.0.1
+  signature: ^5.2.1
+  flutter_colorpicker: ^1.0.3
+  numberpicker: ^2.1.1
+
 
 dev_dependencies:
   flutter_lints: ^2.0.0

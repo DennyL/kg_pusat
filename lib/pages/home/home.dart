@@ -26,12 +26,7 @@ class _HomePageState extends State<HomePage> {
                 alignment: ChartAlignment.center,
                 overflowMode: LegendItemOverflowMode.scroll,
                 isResponsive: true,
-                // title: LegendTitle(
-                //     text:
-                //         "Grafik Keuangan Tahun ${DateTime.now().year}",
-                //     textStyle: Theme.of(context)
-                //         .textTheme
-                //         .headline4),
+
               ),
 
               // Initialize category axis

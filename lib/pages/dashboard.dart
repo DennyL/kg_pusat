@@ -215,10 +215,10 @@ class NavigationSidebarX extends StatelessWidget {
           icon: Icons.people,
           label: 'Cabang',
         ),
-        SidebarXItem(
-          icon: Icons.settings,
-          label: 'Pengaturan',
-        ),
+        // SidebarXItem(
+        //   icon: Icons.settings,
+        //   label: 'Pengaturan',
+        // ),
       ],
     );
   }
@@ -238,11 +238,11 @@ class NavigationScreen extends StatelessWidget {
           case 0:
             return const HomePage();
           case 1:
-            return const KeuanganPage();
+            return const KeuanganControllerPage();
           case 2:
             return const AdminControllerCabangPage();
-          case 3:
-            return const PengaturanPage();
+          // case 3:
+          //   return const PengaturanPage();
           default:
             return const Text(
               "Halaman Ini Belum Tersedia",

@@ -227,8 +227,11 @@ class _CabangPageState extends State<CabangPage> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  responsiveText("Kode Gereja : $_kodeGerejaAdmin", 16,
-                                      FontWeight.w700, darkText),
+                                  responsiveText(
+                                      "Kode Gereja : $_kodeGerejaAdmin",
+                                      16,
+                                      FontWeight.w700,
+                                      darkText),
                                   const SizedBox(
                                     height: 20,
                                   ),
@@ -549,7 +552,7 @@ class _CabangPageState extends State<CabangPage> {
                                     .getCabangGereja(kodeGereja);
                                 return setState(() {});
                               });
-                              ;
+
                               Navigator.pop(context);
                             },
                             child: const Text("Simpan"),
@@ -592,7 +595,7 @@ class _CabangPageState extends State<CabangPage> {
                             "Daftar Cabang", 32, FontWeight.w900, darkText),
                         ElevatedButton(
                           style: TextButton.styleFrom(
-                            primary: Colors.white,
+                            foregroundColor: Colors.white,
                             backgroundColor: buttonColor,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(40),
@@ -617,7 +620,7 @@ class _CabangPageState extends State<CabangPage> {
                           children: [
                             ElevatedButton(
                               style: TextButton.styleFrom(
-                                primary: Colors.white,
+                                foregroundColor: Colors.white,
                                 backgroundColor: buttonColor,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(40),
@@ -799,8 +802,8 @@ class _CabangPageState extends State<CabangPage> {
                                           const Spacer(),
                                           ElevatedButton(
                                             style: ElevatedButton.styleFrom(
-                                              padding: EdgeInsets.all(12),
-                                              shape: CircleBorder(),
+                                              padding: const EdgeInsets.all(12),
+                                              shape: const CircleBorder(),
                                             ),
                                             onPressed: () {},
                                             child: const Tooltip(
@@ -810,8 +813,8 @@ class _CabangPageState extends State<CabangPage> {
                                           ),
                                           ElevatedButton(
                                             style: ElevatedButton.styleFrom(
-                                              padding: EdgeInsets.all(12),
-                                              shape: CircleBorder(),
+                                              padding: const EdgeInsets.all(12),
+                                              shape: const CircleBorder(),
                                             ),
                                             onPressed: () {
                                               _kodeGerejaSimpan = snapData[1]

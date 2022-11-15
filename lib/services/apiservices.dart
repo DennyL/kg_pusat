@@ -98,10 +98,10 @@ class ServicesUser {
   }
 
   //TODO: Get admin gereja cabang
-  Future getAdminCabangGereja(kode_gereja_get) async {
+  Future getAdminCabangGereja(kodeGerejaGet) async {
     final response = await http.get(
       Uri.parse(
-          "${_linkPath}pst/read-admin?kode_gereja=$kode_gereja_get"),
+          "${_linkPath}pst/read-admin?kode_gereja=$kodeGerejaGet"),
     );
     if (response.statusCode == 200) {
       var jsonRespStatus = json.decode(response.body)['status'];
@@ -125,6 +125,107 @@ class ServicesUser {
       return [jsonRespStatus, jsonRespMessage];
     } else {
       throw Exception("Gagal mengupdate data");
+    }
+  }
+
+  Future getNeraca(kodeGereja, tanggal, status, statusNeraca) async {
+    final response = await http.get(
+      Uri.parse(
+          "${_linkPath}neraca-saldo?kode_gereja=$kodeGereja&tanggal=$tanggal&status=$status&status_neraca=$statusNeraca"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+  //TODO: Get User
+  Future getSingleUser(kodeuser) async {
+    final response = await http.get(
+      Uri.parse("${_linkPath}get-profile?kode_user=$kodeuser"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+  Future getKodeKegiatanJurnal(kodeGereja, tanggal) async {
+    final response = await http.get(
+      Uri.parse(
+          "${_linkPath}read-kode-transaksi-jurnal?kode_gereja=$kodeGereja&tanggal=$tanggal"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+  Future getJurnal(kodeGereja, tanggal, kodeTransaksi) async {
+    final response = await http.get(
+      Uri.parse(
+          "${_linkPath}jurnal?kode_gereja=$kodeGereja&tanggal=$tanggal&kode_transaksi=$kodeTransaksi"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+    //TODO: Laporan Buku Besar
+  Future getKodeBukuBesar(kodeGereja) async {
+    final response = await http.get(
+      Uri.parse(
+          "${_linkPath}read-kode-perkiraan-buku-besar?kode_gereja=$kodeGereja"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+  Future getItemBukuBesar(
+      kodeGereja, tanggal, kodeMaster, kodePerkiraan) async {
+    final response = await http.get(
+      Uri.parse(
+          "${_linkPath}buku-besar?kode_gereja=$kodeGereja&tanggal=$tanggal&header_kode_perkiraan=$kodeMaster&kode_perkiraan=$kodePerkiraan"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+  //TODO: Get Transaksi
+  Future getTransaksi(kodeGereja) async {
+    final response = await http.get(
+      Uri.parse("${_linkPath}transaksi?kode_gereja=$kodeGereja"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
     }
   }
 }
