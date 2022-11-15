@@ -206,9 +206,9 @@ class _CustomSplashScreenState extends State<CustomSplashScreen> {
 
   Future getPrefAuth() async {
     final prefs = await SharedPreferences.getInstance();
-    userStatus = prefs.getBool('userStatus') ?? false;
-    kodeUser = prefs.getString('kodeUser') ?? "";
-    kodeGereja = prefs.getString('kodeGereja') ?? "";
+    userStatus = prefs.getBool('userStatus') ?? true;
+    kodeUser = prefs.getString('kodeUser') ?? "adminpusatkg";
+    kodeGereja = prefs.getString('kodeGereja') ?? "KG001";
   }
 
   @override
