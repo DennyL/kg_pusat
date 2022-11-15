@@ -215,7 +215,7 @@ class ServicesUser {
   //TODO: Get Transaksi
   Future getTransaksi(kodeGereja) async {
     final response = await http.get(
-      Uri.parse("${_linkPath}transaksi?kode_gereja=$kodeGereja"),
+      Uri.parse("${_linkPath}pst/transaksi-pusat?kode_pusat=$kodeGereja"),
     );
     if (response.statusCode == 200) {
       var jsonRespStatus = json.decode(response.body)['status'];

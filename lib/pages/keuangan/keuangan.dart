@@ -81,6 +81,7 @@ class KeuanganPage extends StatefulWidget {
 }
 
 class _KeuanganPageState extends State<KeuanganPage> {
+  ServicesUser servicesUser = ServicesUser();
   int _indexFilterTanggal = 0;
 
   DateTime selectedDate = DateTime.now();
@@ -107,8 +108,7 @@ class _KeuanganPageState extends State<KeuanganPage> {
   void initState() {
     // TODO: implement initState
     _rowList.clear();
-    _addRowTransaksi();
-
+    _getTransaksi(kodeGereja);
     formattedDate1 = DateFormat('dd-MM-yyyy').format(selectedDate1);
     dateFrom = formattedDate1;
 
@@ -289,43 +289,69 @@ class _KeuanganPageState extends State<KeuanganPage> {
     }
   }
 
-  void _addRowTransaksi() {
+  Future _getTransaksi(kodeGereja) async {
+    _rowList.clear();
+    var response = await servicesUser.getTransaksi(kodeGereja);
+    if (response[0] != 404) {
+      for (var element in response[1]) {
+        _addRowTransaksi(
+            element['kode_gereja'],
+            element['kode_perkiraan'],
+            element['tanggal_transaksi'],
+            element['uraian_transaksi'],
+            element['jenis_transaksi'],
+            element['nominal']);
+        debugPrint(element['kode_gereja']);
+      }
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _addRowTransaksi(gereja, kode, tanggal, deskripsi, jenis, nominal) {
     _rowList.add(
-      const DataRow(
+      DataRow(
         cells: [
           DataCell(
             Text(
-              "Gereja",
+              gereja.toString(),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           DataCell(
             Text(
-              "kode",
+              kode.toString(),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           DataCell(
             Text(
-              "tanggal",
+              tanggal.toString(),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           DataCell(
             Text(
-              "deskripsi",
+              deskripsi.toString(),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           DataCell(
             Text(
-              "pemasukan",
+              jenis == "pemasukan"
+                  ? CurrencyFormatAkuntansi.convertToIdr(
+                      int.parse(nominal.toString()), 2)
+                  : "-",
               overflow: TextOverflow.ellipsis,
             ),
           ),
           DataCell(
             Text(
-              "pengeluaran",
+              jenis == "pengeluaran"
+                  ? CurrencyFormatAkuntansi.convertToIdr(
+                      int.parse(nominal.toString()), 2)
+                  : "-",
               overflow: TextOverflow.ellipsis,
             ),
           ),
