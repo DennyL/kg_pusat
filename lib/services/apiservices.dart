@@ -8,7 +8,8 @@ class ServicesUser {
   //TODO: Login
   Future getAuth(username, password) async {
     final response = await http.get(
-      Uri.parse("${_linkPath}login?username=$username&password=$password&status1=1&status2="),
+      Uri.parse(
+          "${_linkPath}login?username=$username&password=$password&status1=1&status2="),
     );
     if (response.statusCode == 200) {
       var jsonRespStatus = json.decode(response.body)['status'];
@@ -125,10 +126,10 @@ class ServicesUser {
     }
   }
 
-  Future getNeraca(kodeGereja, tanggal, status, statusNeraca) async {
+  Future getNeraca(kodePusat, tanggal, status, statusNeraca) async {
     final response = await http.get(
       Uri.parse(
-          "${_linkPath}neraca-saldo?kode_gereja=$kodeGereja&tanggal=$tanggal&status=$status&status_neraca=$statusNeraca"),
+          "${_linkPath}pst/read-neraca-pusat?kode_pusat=$kodePusat&tanggal=$tanggal&status=$status&status_neraca=$statusNeraca"),
     );
     if (response.statusCode == 200) {
       var jsonRespStatus = json.decode(response.body)['status'];
@@ -154,10 +155,10 @@ class ServicesUser {
     }
   }
 
-  Future getKodeKegiatanJurnal(kodeGereja, tanggal) async {
+  Future getKodeKegiatanJurnal(kodePusat, tanggal) async {
     final response = await http.get(
       Uri.parse(
-          "${_linkPath}read-kode-transaksi-jurnal?kode_gereja=$kodeGereja&tanggal=$tanggal"),
+          "${_linkPath}pst/read-kode-transaksi-jurnal-pusat?kode_pusat=$kodePusat&tanggal=$tanggal"),
     );
     if (response.statusCode == 200) {
       var jsonRespStatus = json.decode(response.body)['status'];
@@ -168,10 +169,10 @@ class ServicesUser {
     }
   }
 
-  Future getJurnal(kodeGereja, tanggal, kodeTransaksi) async {
+  Future getJurnal(kodePusat, kodeTransaksi) async {
     final response = await http.get(
       Uri.parse(
-          "${_linkPath}jurnal?kode_gereja=$kodeGereja&tanggal=$tanggal&kode_transaksi=$kodeTransaksi"),
+          "${_linkPath}pst/jurnal-bulanan-pusat?kode_pusat=$kodePusat&kode_transaksi=$kodeTransaksi"),
     );
     if (response.statusCode == 200) {
       var jsonRespStatus = json.decode(response.body)['status'];
@@ -216,6 +217,65 @@ class ServicesUser {
   Future getTransaksi(kodeGereja) async {
     final response = await http.get(
       Uri.parse("${_linkPath}pst/transaksi-pusat?kode_pusat=$kodeGereja"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+  Future queryKodeGereja(kodeGereja) async {
+    final response = await http.get(
+      Uri.parse("${_linkPath}pst/query-kode-gereja?kode_gereja=$kodeGereja"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+  Future queryTransaksiKode(
+      kodeGereja, kodeTransaksi, kodePerkiraan, tipe) async {
+    final response = await http.get(
+      Uri.parse(
+          "${_linkPath}pst/query-kode-transaksi-pusat?kode_transaksi=$kodeTransaksi&kode_perkiraan=$kodePerkiraan&kode_gereja=$kodeGereja&tipe=$tipe"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+  Future queryTransaksiTanggal(
+      kodeGereja, tanggal1, tanggal2, tipe, kode) async {
+    final response = await http.get(
+      Uri.parse(
+          "${_linkPath}pst/query-tanggal-pusat?kode_gereja=$kodeGereja&tanggal_ke_1=$tanggal1&tanggal_ke_2=$tanggal2&tipe_gereja=$tipe&kode=$kode"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+  //TODO: get kode Perkiraan
+  Future getKodePerkiraanSingleKegiatan(
+      kodeGereja, kodeKegiatan, kodeTransaksi, status) async {
+    final response = await http.get(
+      Uri.parse(
+          "${_linkPath}read-kode-perkiraan-single-kegiatan?kode_gereja=$kodeGereja&kode_kegiatan=$kodeKegiatan&kode_transaksi=$kodeTransaksi&status=$status"),
     );
     if (response.statusCode == 200) {
       var jsonRespStatus = json.decode(response.body)['status'];

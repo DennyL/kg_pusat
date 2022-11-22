@@ -32,6 +32,10 @@ final List<DataRow> _neracaTable = List.empty(growable: true);
 final List<DataRow> _JurnalTable = List.empty(growable: true);
 final List<DataRow> _BukuBesarTable = List.empty(growable: true);
 
+final List _kodePerkiraan = List.empty(growable: true);
+final List _kodeGereja = List.empty(growable: true);
+final List _kodeTransaksi = List.empty(growable: true);
+
 final _pemasukanLancar = List.empty(growable: true);
 final _pemasukanTetap = List.empty(growable: true);
 final _pengeluaranLancar = List.empty(growable: true);
@@ -104,11 +108,19 @@ class _KeuanganPageState extends State<KeuanganPage> {
   DateTime firstDay = DateTime.now();
   DateTime lastDay = DateTime.now();
 
+  String kodeTransaksiFilter = "";
+  String kodePerkiraanFilter = "";
+
+  final _controllerDropdownFilter = TextEditingController();
+
   @override
   void initState() {
     // TODO: implement initState
     _rowList.clear();
+    kodeTransaksiFilter = "";
+    kodePerkiraanFilter = "";
     _getTransaksi(kodeGereja);
+    _getKodePerkiraan(kodeGereja, "", "", "pengeluaran");
     formattedDate1 = DateFormat('dd-MM-yyyy').format(selectedDate1);
     dateFrom = formattedDate1;
 
@@ -127,12 +139,15 @@ class _KeuanganPageState extends State<KeuanganPage> {
     lastDay = firstDay.add(
       const Duration(days: 6, hours: 23, minutes: 59),
     );
+
+    _controllerDropdownFilter.addListener(_changedSearch);
     super.initState();
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
+    _controllerDropdownFilter.dispose();
     super.dispose();
   }
 
@@ -309,6 +324,70 @@ class _KeuanganPageState extends State<KeuanganPage> {
     }
   }
 
+  Future _queryTanggalTransaksi(
+      kodeGereja, tanggal1, tanggal2, tipe, kode) async {
+    _rowList.clear();
+    var response = await servicesUser.queryTransaksiTanggal(
+        kodeGereja, tanggal1, tanggal2, tipe, kode);
+    if (response[0] != 404) {
+      for (var element in response[1]) {
+        _addRowTransaksi(
+            element['kode_gereja'],
+            element['kode_perkiraan'],
+            element['tanggal_transaksi'],
+            element['uraian_transaksi'],
+            element['jenis_transaksi'],
+            element['nominal']);
+        debugPrint(element['kode_gereja']);
+      }
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future _queryTransaksiKode(
+      kodeGereja, kodeTransaksi, kodePerkiraan, tipe) async {
+    _rowList.clear();
+    var response = await servicesUser.queryTransaksiKode(
+        kodeGereja, kodeTransaksi, kodePerkiraan, tipe);
+    if (response[0] != 404) {
+      for (var element in response[1]) {
+        _addRowTransaksi(
+            element['kode_gereja'],
+            element['kode_perkiraan'],
+            element['tanggal_transaksi'],
+            element['uraian_transaksi'],
+            element['jenis_transaksi'],
+            element['nominal']);
+        debugPrint(element['kode_gereja']);
+      }
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future _queryTransaksiGereja(kodeGereja) async {
+    _rowList.clear();
+    var response = await servicesUser.queryKodeGereja(kodeGereja);
+    if (response[0] != 404) {
+      for (var element in response[1]) {
+        _addRowTransaksi(
+            element['kode_gereja'],
+            element['kode_perkiraan'],
+            element['tanggal_transaksi'],
+            element['uraian_transaksi'],
+            element['jenis_transaksi'],
+            element['nominal']);
+        debugPrint(element['kode_gereja']);
+      }
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   void _addRowTransaksi(gereja, kode, tanggal, deskripsi, jenis, nominal) {
     _rowList.add(
       DataRow(
@@ -402,7 +481,11 @@ class _KeuanganPageState extends State<KeuanganPage> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              _queryTanggalTransaksi(
+                      kodeGereja, date, "", "all", _indexFilterTanggal)
+                  .whenComplete(() => setState(() {}));
+            },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -480,7 +563,11 @@ class _KeuanganPageState extends State<KeuanganPage> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              _queryTanggalTransaksi(
+                      kodeGereja, dateFrom, dateTo, "all", _indexFilterTanggal)
+                  .whenComplete(() => setState(() {}));
+            },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -535,7 +622,11 @@ class _KeuanganPageState extends State<KeuanganPage> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              _queryTanggalTransaksi(
+                      kodeGereja, month, "", "all", _indexFilterTanggal)
+                  .whenComplete(() => setState(() {}));
+            },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -557,6 +648,39 @@ class _KeuanganPageState extends State<KeuanganPage> {
       return Column();
     }
   }
+
+  void _changedSearch() {
+    debugPrint(_controllerDropdownFilter.text);
+  }
+
+  _splitString(val) {
+    var value = val.toString();
+    var split = value.indexOf(" ");
+    var temp = value.substring(0, split);
+    return temp;
+  }
+
+  _buatKodeGabungan(val) {
+    var temp = kodeGereja + _splitString(val);
+    return temp;
+  }
+
+  Future _getKodePerkiraan(
+      kodeGereja, kodeKegiatan, kodeTransaksi, status) async {
+    _kodePerkiraan.clear();
+
+    var response = await servicesUser.getKodePerkiraanSingleKegiatan(
+        kodeGereja, kodeKegiatan, kodeTransaksi, status);
+
+    if (response[0] != 404) {
+      for (var element in response[1]) {
+        debugPrint(element.toString());
+        _kodePerkiraan.add(
+            "${element['kode_perkiraan']} ~ ${element['nama_kode_perkiraan']}");
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -810,7 +934,10 @@ class _KeuanganPageState extends State<KeuanganPage> {
                                     });
                                     debugPrint(
                                         'switched to: $_indexFilterTanggal');
-                                    if (_indexFilterTanggal == 0) {}
+                                    if (_indexFilterTanggal == 0) {
+                                      _getTransaksi(kodeGereja)
+                                          .whenComplete(() => setState(() {}));
+                                    }
                                   },
                                 ),
                                 const SizedBox(
@@ -835,7 +962,7 @@ class _KeuanganPageState extends State<KeuanganPage> {
                                           hintText: "Cari Disini",
                                           suffixIcon: IconButton(
                                             onPressed: () {
-                                              //_controllerDropdownFilter.clear();
+                                              _controllerDropdownFilter.clear();
                                             },
                                             icon: Icon(
                                               Icons.clear,
@@ -844,11 +971,13 @@ class _KeuanganPageState extends State<KeuanganPage> {
                                             ),
                                           ),
                                         ),
-                                        //controller: _controllerDropdownFilter,
+                                        controller: _controllerDropdownFilter,
                                       ),
                                     ),
-                                    //items: _kodePerkiraan,
-                                    onChanged: (val) {},
+                                    //items: _kodeGereja,
+                                    onChanged: (val) {
+                                      
+                                    },
                                     selectedItem: "pilih Kode Gereja",
                                   ),
                                 ),
@@ -866,7 +995,9 @@ class _KeuanganPageState extends State<KeuanganPage> {
                                           border: const OutlineInputBorder(),
                                           hintText: "Cari Disini",
                                           suffixIcon: IconButton(
-                                            onPressed: () {},
+                                            onPressed: () {
+                                              _controllerDropdownFilter.clear();
+                                            },
                                             icon: Icon(
                                               Icons.clear,
                                               color:
@@ -874,7 +1005,7 @@ class _KeuanganPageState extends State<KeuanganPage> {
                                             ),
                                           ),
                                         ),
-                                        //controller: _controllerDropdownFilter,
+                                        controller: _controllerDropdownFilter,
                                       ),
                                     ),
                                     //items: _kodeTransaksiAdded,
@@ -897,7 +1028,7 @@ class _KeuanganPageState extends State<KeuanganPage> {
                                           hintText: "Cari Disini",
                                           suffixIcon: IconButton(
                                             onPressed: () {
-                                              //_controllerDropdownFilter.clear();
+                                              _controllerDropdownFilter.clear();
                                             },
                                             icon: Icon(
                                               Icons.clear,
@@ -906,16 +1037,55 @@ class _KeuanganPageState extends State<KeuanganPage> {
                                             ),
                                           ),
                                         ),
-                                        //controller: _controllerDropdownFilter,
+                                        controller: _controllerDropdownFilter,
                                       ),
                                     ),
-                                    //items: _kodePerkiraan,
-                                    onChanged: (val) {},
+                                    items: _kodePerkiraan,
+                                    onChanged: (val) {
+                                      debugPrint(val);
+                                      debugPrint(_splitString(val));
+                                      kodePerkiraanFilter = _splitString(val);
+                                      _queryTransaksiKode(kodeGereja, "",
+                                              kodePerkiraanFilter, "all")
+                                          .whenComplete(() => setState(() {}));
+                                      debugPrint(_buatKodeGabungan(val));
+                                    },
                                     selectedItem: "pilih Kode Perkiraan",
                                   ),
                                 ),
                                 const SizedBox(
                                   height: 10,
+                                ),
+                                ElevatedButton(
+                                  //TODO: search btn
+                                  style: ElevatedButton.styleFrom(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    _queryTransaksiKode(
+                                            kodeGereja,
+                                            kodeTransaksiFilter,
+                                            kodePerkiraanFilter,
+                                            "all")
+                                        .whenComplete(() => setState(() {}));
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(Icons.search),
+                                      const SizedBox(
+                                        width: 10,
+                                      ),
+                                      Text(
+                                        "Cari",
+                                        style: GoogleFonts.nunito(
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 16),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -1045,8 +1215,8 @@ class _AdminLaporanKeuanganState extends State<AdminLaporanKeuangan>
         await servicesUser.getKodeKegiatanJurnal(kodeGereja, month);
     if (responseKode[0] != 404) {
       for (var element in responseKode[1]) {
-        var responseData = await servicesUser.getJurnal(
-            kodeGereja, month, element['kode_transaksi']);
+        var responseData =
+            await servicesUser.getJurnal(kodeGereja, element['kode_transaksi']);
 
         for (var element in responseData[1]) {
           tempData.add(DateFormat('dd MMM').format(
@@ -1592,7 +1762,6 @@ class _AdminLaporanKeuanganState extends State<AdminLaporanKeuangan>
                                             child: FutureBuilder(
                                               future: servicesUser.getJurnal(
                                                   kodeGereja,
-                                                  month,
                                                   snapData[1][index]
                                                       ['kode_transaksi']),
                                               builder: (context, snapshot) {
