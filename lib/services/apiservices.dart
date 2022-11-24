@@ -81,11 +81,11 @@ class ServicesUser {
   }
 
   //TODO: Input admin gereja cabang
-  Future inputAdminCabangGereja(
-      kodeGerejaCabangAdmin, emailAdmin, telpAdmin, namaAdmin) async {
+  Future inputAdminCabangGereja(kodeGerejaCabangAdmin, emailAdmin, telpAdmin,
+      namaAdmin, usernameAdmin, passwordAdmin) async {
     final response = await http.post(
       Uri.parse(
-          "${_linkPath}pst/input-admin?kode_gereja=$kodeGerejaCabangAdmin&email_user=$emailAdmin&no_telp_user=$telpAdmin&nama_lengkap_user=$namaAdmin"),
+          "${_linkPath}pst/input-admin?kode_gereja=$kodeGerejaCabangAdmin&email_user=$emailAdmin&no_telp_user=$telpAdmin&nama_lengkap_user=$namaAdmin&username=$usernameAdmin&password=$passwordAdmin"),
     );
     if (response.statusCode == 200) {
       var jsonRespStatus = json.decode(response.body)['status'];
@@ -276,6 +276,35 @@ class ServicesUser {
     final response = await http.get(
       Uri.parse(
           "${_linkPath}read-kode-perkiraan-single-kegiatan?kode_gereja=$kodeGereja&kode_kegiatan=$kodeKegiatan&kode_transaksi=$kodeTransaksi&status=$status"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+  //TODO: get All kode Gereja
+  Future getAllKodeGereja(kodeGereja) async {
+    final response = await http.get(
+      Uri.parse("${_linkPath}pst/read-kode-gereja?kode_pusat=$kodeGereja"),
+    );
+    if (response.statusCode == 200) {
+      var jsonRespStatus = json.decode(response.body)['status'];
+      var jsonRespData = json.decode(response.body)['data'];
+      return [jsonRespStatus, jsonRespData];
+    } else {
+      throw Exception("Gagal mengambil data");
+    }
+  }
+
+  //TODO: get All kode Transaksi
+  Future getAllKodeTransaksi(kodeGereja) async {
+    final response = await http.get(
+      Uri.parse(
+          "${_linkPath}pst/read-all-kode-transaksi?kode_pusat=$kodeGereja"),
     );
     if (response.statusCode == 200) {
       var jsonRespStatus = json.decode(response.body)['status'];

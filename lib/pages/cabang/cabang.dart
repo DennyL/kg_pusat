@@ -77,11 +77,13 @@ class _CabangPageState extends State<CabangPage> {
   final _controllerNamaAdminCabang = TextEditingController();
   final _controllerEmailAdminCabang = TextEditingController();
   final _controllerTelpAdminCabang = TextEditingController();
-  final _controllerSearchGerejaCabang = TextEditingController();
+  final _controllerUsernameAdminCabang = TextEditingController();
+  final _controllerPassAdminCabang = TextEditingController();
 
-  final List _user = ["", "kevin", ""];
+  final List _user = ["", "Kevin", ""];
 
   bool visibleAddCabang = false;
+  bool _passwordVisible = true;
 
   ServicesUser servicesUserItem = ServicesUser();
   late Future kategoriGerejaCabang;
@@ -101,6 +103,40 @@ class _CabangPageState extends State<CabangPage> {
       );
     }
   }
+
+  Future postAdminGerejaCabang(kodeGerejaCabangAdmin, emailAdmin, telpAdmin,
+      namaAdmin, usernameAdmin, passwordAdmin, context) async {
+    var response = await servicesUserItem.inputAdminCabangGereja(
+        kodeGerejaCabangAdmin,
+        emailAdmin,
+        telpAdmin,
+        namaAdmin,
+        usernameAdmin,
+        passwordAdmin);
+
+    if (response[0] != 404) {
+      return true;
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response[1]),
+        ),
+      );
+    }
+  }
+
+  // Future _getUserAdminGerejaCabang(kodeGereja) async {
+  //   _user.clear();
+
+  //   var response = await servicesUserItem
+  //       .getAdminCabangGereja(kodeGereja);
+  //   if (response[0] != 404) {
+  //     for (var element in response[1]) {
+  //       debugPrint(element.toString());
+  //       _user.add("${element['nama_lengkap_admin']}");
+  //     }
+  //   }
+  // }
 
   Future _updateStatusGereja(kodeGerStatus, kodePusStatus, context) async {
     var response =
@@ -125,7 +161,68 @@ class _CabangPageState extends State<CabangPage> {
 
   @override
   void dispose() {
+    _controllerPassAdminCabang.dispose();
     super.dispose();
+  }
+
+  void _passwordVisibility() {
+    if (mounted) {
+      setState(() {
+        _passwordVisible = !_passwordVisible;
+      });
+    }
+  }
+
+  responsiveTextFieldPass(deviceWidth, deviceHeight, controllerText, pw) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: SizedBox(
+        width: deviceWidth * 0.5,
+        child: TextField(
+          controller: controllerText,
+          obscureText: pw ? _passwordVisible : false,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: surfaceColor,
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 0, horizontal: 25),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Colors.transparent,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Colors.transparent,
+              ),
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Colors.transparent,
+              ),
+            ),
+            suffixIcon: pw == true
+                ? IconButton(
+                    color: buttonColor,
+                    onPressed: () {
+                      setState(() {
+                        _passwordVisibility();
+                      });
+                    },
+                    icon: Icon(_passwordVisible == true
+                        ? Icons.visibility
+                        : Icons.visibility_off),
+                  )
+                : null,
+          ),
+        ),
+      ),
+    );
   }
 
   responsiveTextField(deviceWidth, deviceHeight, controllerText) {
@@ -227,8 +324,11 @@ class _CabangPageState extends State<CabangPage> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  responsiveText("Kode Gereja : $_kodeGerejaAdmin", 16,
-                                      FontWeight.w700, darkText),
+                                  responsiveText(
+                                      "Kode Gereja : $_kodeGerejaAdmin",
+                                      16,
+                                      FontWeight.w700,
+                                      darkText),
                                   const SizedBox(
                                     height: 20,
                                   ),
@@ -265,6 +365,26 @@ class _CabangPageState extends State<CabangPage> {
                                   const SizedBox(
                                     height: 15,
                                   ),
+                                  responsiveText("Username", 16,
+                                      FontWeight.w700, darkText),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  responsiveTextField(
+                                      dw, dh, _controllerUsernameAdminCabang),
+                                  const SizedBox(
+                                    height: 15,
+                                  ),
+                                  responsiveText("Password", 16,
+                                      FontWeight.w700, darkText),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  responsiveTextFieldPass(
+                                      dw, dh, _controllerPassAdminCabang, true),
+                                  const SizedBox(
+                                    height: 15,
+                                  ),
                                 ],
                               ),
                             ],
@@ -277,7 +397,12 @@ class _CabangPageState extends State<CabangPage> {
                             children: [
                               ElevatedButton(
                                 onPressed: () {
-                                  if (mounted) {}
+                                  _controllerNamaAdminCabang.clear();
+                                  _controllerAlamatCabang.clear();
+                                  _controllerTelpAdminCabang.clear();
+                                  _controllerUsernameAdminCabang.clear();
+                                  _controllerPassAdminCabang.clear();
+                                  _controllerEmailAdminCabang.clear();
                                   Navigator.pop(context);
                                 },
                                 child: const Text("Batal"),
@@ -287,7 +412,27 @@ class _CabangPageState extends State<CabangPage> {
                               ),
                               ElevatedButton(
                                 onPressed: () {
-                                  if (mounted) {}
+                                  if (mounted) {
+                                    postAdminGerejaCabang(
+                                            _kodeGerejaAdmin,
+                                            _controllerEmailAdminCabang.text,
+                                            _controllerTelpAdminCabang.text,
+                                            _controllerNamaAdminCabang.text,
+                                            _controllerUsernameAdminCabang.text,
+                                            _controllerPassAdminCabang.text,
+                                            context)
+                                        .whenComplete(() {
+                                      kategoriGerejaCabang = servicesUserItem
+                                          .getCabangGereja(kodeGereja);
+                                      setState(() {});
+                                    });
+                                    _controllerNamaAdminCabang.clear();
+                                    _controllerAlamatCabang.clear();
+                                    _controllerTelpAdminCabang.clear();
+                                    _controllerUsernameAdminCabang.clear();
+                                    _controllerPassAdminCabang.clear();
+                                    _controllerEmailAdminCabang.clear();
+                                  }
                                   Navigator.pop(context);
                                 },
                                 child: const Text("Tambah"),
@@ -575,275 +720,269 @@ class _CabangPageState extends State<CabangPage> {
     final deviceWidth = MediaQuery.of(context).size.width;
     final deviceHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(0),
-                width: deviceWidth,
+        body: ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context).copyWith(dragDevices: {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+      }),
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        controller: ScrollController(),
+        child: SafeArea(
+          child: Container(
+            child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        responsiveText(
-                            "Daftar Cabang", 32, FontWeight.w900, darkText),
-                        ElevatedButton(
-                          style: TextButton.styleFrom(
-                            primary: Colors.white,
-                            backgroundColor: buttonColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(40),
-                            ),
-                          ),
-                          onPressed: () {
-                            widget.controllerDisableCabang.animateToPage(1,
-                                duration: const Duration(milliseconds: 250),
-                                curve: Curves.ease);
-                          },
-                          child: responsiveText("Disable Gereja Cabang", 15,
-                              FontWeight.w700, lightText),
-                        ),
-                      ],
-                    ),
-                    const Divider(
-                      height: 56,
-                    ),
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            ElevatedButton(
-                              style: TextButton.styleFrom(
-                                primary: Colors.white,
-                                backgroundColor: buttonColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(40),
+                    Container(
+                      padding: const EdgeInsets.all(0),
+                      width: deviceWidth,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              responsiveText("Daftar Cabang", 32,
+                                  FontWeight.w900, darkText),
+                              ElevatedButton(
+                                style: TextButton.styleFrom(
+                                  primary: Colors.white,
+                                  backgroundColor: buttonColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(40),
+                                  ),
                                 ),
+                                onPressed: () {
+                                  widget.controllerDisableCabang.animateToPage(
+                                      1,
+                                      duration:
+                                          const Duration(milliseconds: 250),
+                                      curve: Curves.ease);
+                                },
+                                child: responsiveText("Disable Gereja Cabang",
+                                    15, FontWeight.w700, lightText),
                               ),
-                              onPressed: () {
-                                _showTambahDialogGerejaCabang(
-                                    deviceWidth, deviceHeight);
-                              },
-                              child: Row(
+                            ],
+                          ),
+                          const Divider(
+                            height: 56,
+                          ),
+                          Column(
+                            children: [
+                              Row(
                                 children: [
-                                  Icon(
-                                    Icons.add_circle_outline_rounded,
-                                    color: lightText,
+                                  ElevatedButton(
+                                    style: TextButton.styleFrom(
+                                      primary: Colors.white,
+                                      backgroundColor: buttonColor,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(40),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      _showTambahDialogGerejaCabang(
+                                          deviceWidth, deviceHeight);
+                                    },
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.add_circle_outline_rounded,
+                                          color: lightText,
+                                        ),
+                                        const SizedBox(
+                                          width: 5,
+                                        ),
+                                        responsiveText("Buat Gereja Cabang", 15,
+                                            FontWeight.w700, lightText)
+                                      ],
+                                    ),
                                   ),
-                                  const SizedBox(
-                                    width: 5,
-                                  ),
-                                  responsiveText("Buat Gereja Cabang", 15,
-                                      FontWeight.w700, lightText)
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        TextField(
-                          controller: _controllerSearchGerejaCabang,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: surfaceColor,
-                            labelText: 'Cari Nama Gereja Cabang',
-                            labelStyle: TextStyle(
-                              color: Colors.black.withOpacity(0.5),
-                            ),
-                            prefixIcon: Icon(
-                              Icons.search_rounded,
-                              color: navButtonPrimary.withOpacity(0.5),
-                            ),
-                            suffix: IconButton(
-                              onPressed: () {
-                                _controllerSearchGerejaCabang.clear();
-                              },
-                              icon: Icon(
-                                Icons.clear,
-                                color: navButtonPrimary.withOpacity(0.5),
+                              const SizedBox(
+                                height: 15,
                               ),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                                vertical: 0, horizontal: 25),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(15),
-                              borderSide: BorderSide(
-                                color: navButtonPrimary.withOpacity(0.5),
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              borderSide: BorderSide(
-                                color: navButtonPrimary.withOpacity(0.5),
-                              ),
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(30),
-                              borderSide: BorderSide(
-                                color: navButtonPrimary.withOpacity(0.5),
-                              ),
-                            ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    FutureBuilder(
-                      future: kategoriGerejaCabang,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          List snapData = snapshot.data! as List;
-                          if (snapData[0] != 404) {
-                            return ScrollConfiguration(
-                              behavior:
-                                  ScrollConfiguration.of(context).copyWith(
-                                dragDevices: {
-                                  PointerDeviceKind.touch,
-                                  PointerDeviceKind.mouse,
-                                },
-                              ),
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                scrollDirection: Axis.vertical,
-                                controller: ScrollController(),
-                                physics: const ClampingScrollPhysics(),
-                                itemCount: snapData[1].length,
-                                itemBuilder: (context, index) {
-                                  return Card(
-                                    shape: RoundedRectangleBorder(
-                                      side: BorderSide(
-                                        color:
-                                            navButtonPrimary.withOpacity(0.5),
-                                      ),
-                                      borderRadius: BorderRadius.circular(15),
+                          const SizedBox(
+                            height: 15,
+                          ),
+                          FutureBuilder(
+                            future: kategoriGerejaCabang,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                List snapData = snapshot.data! as List;
+                                if (snapData[0] != 404) {
+                                  return ScrollConfiguration(
+                                    behavior: ScrollConfiguration.of(context)
+                                        .copyWith(
+                                      dragDevices: {
+                                        PointerDeviceKind.touch,
+                                        PointerDeviceKind.mouse,
+                                      },
                                     ),
-                                    child: ListTile(
-                                      title: Row(
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                snapData[1][index]
-                                                        ['nama_gereja'] +
-                                                    " " +
-                                                    "(" +
-                                                    snapData[1][index]
-                                                        ['kode_gereja'] +
-                                                    ")",
-                                                style: GoogleFonts.nunito(
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 16,
-                                                  color: darkText,
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      scrollDirection: Axis.vertical,
+                                      controller: ScrollController(),
+                                      physics: const ClampingScrollPhysics(),
+                                      itemCount: snapData[1].length,
+                                      itemBuilder: (context, index) {
+                                        return Card(
+                                          shape: RoundedRectangleBorder(
+                                            side: BorderSide(
+                                              color: navButtonPrimary
+                                                  .withOpacity(0.5),
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                          ),
+                                          child: ListTile(
+                                            title: Row(
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      snapData[1][index]
+                                                              ['nama_gereja'] +
+                                                          " " +
+                                                          "(" +
+                                                          snapData[1][index]
+                                                              ['kode_gereja'] +
+                                                          ")",
+                                                      style: GoogleFonts.nunito(
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        fontSize: 16,
+                                                        color: darkText,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                      height: 5,
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        Text(
+                                                          "Admin : " +
+                                                              snapData[1][index]
+                                                                  [
+                                                                  'nama_lengkap_admin'],
+                                                          style: GoogleFonts
+                                                              .nunito(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontSize: 15,
+                                                            color: darkText,
+                                                          ),
+                                                        ),
+                                                        Visibility(
+                                                          visible: snapData[1][
+                                                                          index]
+                                                                      [
+                                                                      'nama_lengkap_admin'] !=
+                                                                  ""
+                                                              ? false
+                                                              : true,
+                                                          child: Tooltip(
+                                                            message:
+                                                                "Tambahkan Akun Admin",
+                                                            child: IconButton(
+                                                                splashColor: Colors
+                                                                    .transparent,
+                                                                highlightColor:
+                                                                    Colors
+                                                                        .transparent,
+                                                                hoverColor: Colors
+                                                                    .transparent,
+                                                                onPressed: () {
+                                                                  _namaGerejaAdmin =
+                                                                      snapData[1]
+                                                                              [
+                                                                              index]
+                                                                          [
+                                                                          'nama_gereja'];
+                                                                  _kodeGerejaAdmin =
+                                                                      snapData[1]
+                                                                              [
+                                                                              index]
+                                                                          [
+                                                                          'kode_gereja'];
+                                                                  _showTambahDialogAdmin(
+                                                                      deviceWidth,
+                                                                      deviceHeight);
+                                                                },
+                                                                icon:
+                                                                    const Icon(
+                                                                  Icons.edit,
+                                                                  size: 20,
+                                                                )),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
                                                 ),
-                                              ),
-                                              const SizedBox(
-                                                height: 5,
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    "Admin : " + _user[index],
-                                                    style: GoogleFonts.nunito(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 15,
-                                                      color: darkText,
-                                                    ),
+                                                const Spacer(),
+                                                ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    padding: EdgeInsets.all(12),
+                                                    shape: CircleBorder(),
                                                   ),
-                                                  Visibility(
-                                                    visible: _user[index] != ""
-                                                        ? false
-                                                        : true,
-                                                    child: Tooltip(
-                                                      message:
-                                                          "Tambahkan Akun Admin",
-                                                      child: IconButton(
-                                                          splashColor: Colors
-                                                              .transparent,
-                                                          highlightColor: Colors
-                                                              .transparent,
-                                                          hoverColor: Colors
-                                                              .transparent,
-                                                          onPressed: () {
-                                                            _namaGerejaAdmin =
-                                                                snapData[1]
-                                                                        [index][
-                                                                    'nama_gereja'];
-                                                            _kodeGerejaAdmin =
-                                                                snapData[1]
-                                                                        [index][
-                                                                    'kode_gereja'];
-                                                            _showTambahDialogAdmin(
-                                                                deviceWidth,
-                                                                deviceHeight);
-                                                          },
-                                                          icon: const Icon(
-                                                            Icons.edit,
-                                                            size: 20,
-                                                          )),
-                                                    ),
+                                                  onPressed: () {},
+                                                  child: const Tooltip(
+                                                    message:
+                                                        "Cek Anggota Gereja",
+                                                    child: Icon(
+                                                        Icons.people_outline),
                                                   ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          const Spacer(),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              padding: EdgeInsets.all(12),
-                                              shape: CircleBorder(),
-                                            ),
-                                            onPressed: () {},
-                                            child: const Tooltip(
-                                              message: "Cek Anggota Gereja",
-                                              child: Icon(Icons.people_outline),
-                                            ),
-                                          ),
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              padding: EdgeInsets.all(12),
-                                              shape: CircleBorder(),
-                                            ),
-                                            onPressed: () {
-                                              _kodeGerejaSimpan = snapData[1]
-                                                  [index]['kode_gereja'];
-                                              _showDisable(
-                                                  deviceWidth, deviceHeight);
-                                            },
-                                            child: const Tooltip(
-                                              message: "Disable Gereja",
-                                              child: Icon(Icons.lock_outline),
+                                                ),
+                                                ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    padding: EdgeInsets.all(12),
+                                                    shape: CircleBorder(),
+                                                  ),
+                                                  onPressed: () {
+                                                    _kodeGerejaSimpan =
+                                                        snapData[1][index]
+                                                            ['kode_gereja'];
+                                                    _showDisable(deviceWidth,
+                                                        deviceHeight);
+                                                  },
+                                                  child: const Tooltip(
+                                                    message: "Disable Gereja",
+                                                    child: Icon(
+                                                        Icons.lock_outline),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                        ],
-                                      ),
+                                        );
+                                      },
                                     ),
                                   );
-                                },
-                              ),
-                            );
-                          } else if (snapData[0] == 404) {
-                            return noDataFound();
-                          }
-                        }
-                        return loadingAnimation();
-                      },
+                                } else if (snapData[0] == 404) {
+                                  return noDataFound();
+                                }
+                              }
+                              return loadingAnimation();
+                            },
+                          ),
+                        ],
+                      ),
                     )
                   ],
-                ),
-              )
-            ],
-          )),
-    );
+                )),
+          ),
+        ),
+      ),
+    ));
   }
 }
 

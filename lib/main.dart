@@ -246,3 +246,7 @@ class _MyAppState extends State<MyApp> {
     }
   }
 }
+
+
+//run on release mode : lbh ringan & smooth
+// flutter run --release

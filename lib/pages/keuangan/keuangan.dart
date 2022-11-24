@@ -26,8 +26,6 @@ final List _dataNeraca = List.empty(growable: true);
 final List _dataBukuBesar = List.empty(growable: true);
 final List _dataJurnal = List.empty(growable: true);
 
-final List<DataRow> _saldoAwal = List.empty(growable: true);
-
 final List<DataRow> _neracaTable = List.empty(growable: true);
 final List<DataRow> _JurnalTable = List.empty(growable: true);
 final List<DataRow> _BukuBesarTable = List.empty(growable: true);
@@ -86,8 +84,9 @@ class KeuanganPage extends StatefulWidget {
 
 class _KeuanganPageState extends State<KeuanganPage> {
   ServicesUser servicesUser = ServicesUser();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _controllerDropdownFilter = TextEditingController();
   int _indexFilterTanggal = 0;
-
   DateTime selectedDate = DateTime.now();
   String formattedDate = "";
   String date = "Date";
@@ -111,16 +110,17 @@ class _KeuanganPageState extends State<KeuanganPage> {
   String kodeTransaksiFilter = "";
   String kodePerkiraanFilter = "";
 
-  final _controllerDropdownFilter = TextEditingController();
-
   @override
   void initState() {
     // TODO: implement initState
     _rowList.clear();
     kodeTransaksiFilter = "";
     kodePerkiraanFilter = "";
+
     _getTransaksi(kodeGereja);
     _getKodePerkiraan(kodeGereja, "", "", "pengeluaran");
+    _getAllKodeTransaksi(kodeGereja);
+    _getAllKodeGereja(kodeGereja);
     formattedDate1 = DateFormat('dd-MM-yyyy').format(selectedDate1);
     dateFrom = formattedDate1;
 
@@ -141,6 +141,7 @@ class _KeuanganPageState extends State<KeuanganPage> {
     );
 
     _controllerDropdownFilter.addListener(_changedSearch);
+
     super.initState();
   }
 
@@ -149,6 +150,10 @@ class _KeuanganPageState extends State<KeuanganPage> {
     // TODO: implement dispose
     _controllerDropdownFilter.dispose();
     super.dispose();
+  }
+
+  void _changedSearch() {
+    debugPrint(_controllerDropdownFilter.text);
   }
 
   Future<void> selectMonth(context) async {
@@ -649,10 +654,6 @@ class _KeuanganPageState extends State<KeuanganPage> {
     }
   }
 
-  void _changedSearch() {
-    debugPrint(_controllerDropdownFilter.text);
-  }
-
   _splitString(val) {
     var value = val.toString();
     var split = value.indexOf(" ");
@@ -681,12 +682,273 @@ class _KeuanganPageState extends State<KeuanganPage> {
     }
   }
 
+  Future _getAllKodeGereja(kodeGereja) async {
+    _kodeGereja.clear();
+
+    var response = await servicesUser.getAllKodeGereja(kodeGereja);
+
+    if (response[0] != 404) {
+      for (var element in response[1]) {
+        debugPrint(element.toString());
+        _kodeGereja.add("${element['kode_gereja']}");
+      }
+    }
+  }
+
+  Future _getAllKodeTransaksi(kodeGereja) async {
+    _kodeTransaksi.clear();
+
+    var response = await servicesUser.getAllKodeTransaksi(kodeGereja);
+
+    if (response[0] != 404) {
+      for (var element in response[1]) {
+        debugPrint(element.toString());
+        _kodeTransaksi.add("${element['kode_transaksi']}");
+      }
+    }
+  }
+
+  drawerFilter() {
+    return Container(
+      color: scaffoldBackgroundColor,
+      width: 350,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+            },
+          ),
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            controller: ScrollController(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(
+                  height: 56,
+                ),
+                ToggleSwitch(
+                  initialLabelIndex: _indexFilterTanggal,
+                  totalSwitches: 4,
+                  labels: const ['Semua', 'Hari', 'Minggu', 'Bulan'],
+                  activeBgColor: [primaryColorVariant],
+                  activeFgColor: darkText,
+                  inactiveBgColor: Colors.grey[200],
+                  inactiveFgColor: darkText,
+                  dividerColor: Colors.white,
+                  animate: true,
+                  animationDuration: 250,
+                  onToggle: (index) {
+                    setState(() {
+                      _indexFilterTanggal = index!;
+                    });
+                    debugPrint('switched to: $_indexFilterTanggal');
+                    if (_indexFilterTanggal == 0) {
+                      _getTransaksi(kodeGereja)
+                          .whenComplete(() => setState(() {}));
+                    }
+                  },
+                ),
+                const SizedBox(
+                  height: 25,
+                ),
+                _filterTanggalField(),
+                const Divider(
+                  height: 56,
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: responsiveText(
+                      "Filter Gereja", 14, FontWeight.w700, darkText),
+                ),
+                Card(
+                  color: primaryColor,
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  child: DropdownSearch<dynamic>(
+                    popupProps: PopupProps.menu(
+                      showSearchBox: true,
+                      searchFieldProps: TextFieldProps(
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          hintText: "Cari Disini",
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              _controllerDropdownFilter.clear();
+                            },
+                            icon: Icon(
+                              Icons.clear,
+                              color: Colors.black.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                        controller: _controllerDropdownFilter,
+                      ),
+                    ),
+                    items: _kodeGereja,
+                    onChanged: (val) {
+                      debugPrint(val);
+                      _queryTransaksiGereja(val)
+                          .whenComplete(() => setState(() {}));
+                    },
+                    selectedItem: "pilih Kode Gereja",
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: responsiveText(
+                      "Filter Transaksi", 14, FontWeight.w700, darkText),
+                ),
+                Card(
+                  color: primaryColor,
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  child: DropdownSearch<dynamic>(
+                    popupProps: PopupProps.menu(
+                      showSearchBox: true,
+                      searchFieldProps: TextFieldProps(
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          hintText: "Cari Disini",
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              _controllerDropdownFilter.clear();
+                            },
+                            icon: Icon(
+                              Icons.clear,
+                              color: Colors.black.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                        controller: _controllerDropdownFilter,
+                      ),
+                    ),
+                    items: _kodeTransaksi,
+                    onChanged: (val) {
+                      debugPrint(val);
+                      kodeTransaksiFilter = val;
+                      _queryTransaksiKode(
+                              kodeGereja, kodeTransaksiFilter, "", "all")
+                          .whenComplete(() => setState(() {}));
+                    },
+                    selectedItem: "pilih Kode Transaksi",
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: responsiveText(
+                      "Filter Kode Perkiraan", 14, FontWeight.w700, darkText),
+                ),
+                Card(
+                  color: primaryColor,
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  child: DropdownSearch<dynamic>(
+                    popupProps: PopupProps.menu(
+                      showSearchBox: true,
+                      searchFieldProps: TextFieldProps(
+                        decoration: InputDecoration(
+                          border: const OutlineInputBorder(),
+                          hintText: "Cari Disini",
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              _controllerDropdownFilter.clear();
+                            },
+                            icon: Icon(
+                              Icons.clear,
+                              color: Colors.black.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                        controller: _controllerDropdownFilter,
+                      ),
+                    ),
+                    items: _kodePerkiraan,
+                    onChanged: (val) {
+                      debugPrint(val);
+                      debugPrint(_splitString(val));
+                      kodePerkiraanFilter = _splitString(val);
+                      _queryTransaksiKode(
+                              kodeGereja, "", kodePerkiraanFilter, "all")
+                          .whenComplete(() => setState(() {}));
+                    },
+                    selectedItem: "pilih Kode Perkiraan",
+                  ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                ElevatedButton(
+                  //TODO: search btn
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () {
+                    _queryTransaksiKode(kodeGereja, kodeTransaksiFilter,
+                            kodePerkiraanFilter, "all")
+                        .whenComplete(() => setState(() {}));
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.search),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        "Cari",
+                        style: GoogleFonts.nunito(
+                            fontWeight: FontWeight.w700, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 56,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  visibleFilter(deviceWidth, context) {
+    return Wrap(
+      children: [
+        const SizedBox(
+          width: 16,
+        ),
+        deviceWidth < 1280
+            ? IconButton(
+                onPressed: () {
+                  _scaffoldKey.currentState!.openEndDrawer();
+                },
+                icon: const Icon(Icons.filter_alt_outlined),
+              )
+            : Visibility(
+                visible: false,
+                child: Column(),
+              ),
+        const SizedBox(
+          width: 16,
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final deviceWidth = MediaQuery.of(context).size.width;
     final deviceHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+      key: _scaffoldKey,
+      endDrawerEnableOpenDragGesture: false,
+      endDrawer: drawerFilter(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 25),
         child: Column(
@@ -697,19 +959,30 @@ class _KeuanganPageState extends State<KeuanganPage> {
               children: [
                 responsiveText(
                     "Keuangan Cabang", 32, FontWeight.w900, darkText),
-                ElevatedButton(
-                  onPressed: () {
-                    widget.controllerLaporan.animateToPage(1,
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.ease);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                Expanded(
+                  child: Wrap(
+                    runSpacing: 16.0,
+                    alignment: WrapAlignment.end,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    runAlignment: WrapAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          widget.controllerLaporan.animateToPage(1,
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.ease);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text("Laporan Keuangan"),
+                      ),
+                    ],
                   ),
-                  child: const Text("Laporan Keuangan"),
                 ),
+                visibleFilter(deviceWidth, context),
               ],
             ),
             const Divider(
@@ -903,193 +1176,7 @@ class _KeuanganPageState extends State<KeuanganPage> {
                                     ),
                                   ),
                           ),
-                          const SizedBox(
-                            width: 16,
-                          ),
-                          SizedBox(
-                            width: 300,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                ToggleSwitch(
-                                  initialLabelIndex: _indexFilterTanggal,
-                                  totalSwitches: 4,
-                                  labels: const [
-                                    'Semua',
-                                    'Hari',
-                                    'Minggu',
-                                    'Bulan'
-                                  ],
-                                  activeBgColor: [primaryColorVariant],
-                                  activeFgColor: darkText,
-                                  inactiveBgColor: Colors.grey[200],
-                                  inactiveFgColor: darkText,
-                                  dividerColor: Colors.white,
-                                  animate: true,
-                                  animationDuration: 250,
-                                  onToggle: (index) {
-                                    setState(() {
-                                      _indexFilterTanggal = index!;
-                                    });
-                                    debugPrint(
-                                        'switched to: $_indexFilterTanggal');
-                                    if (_indexFilterTanggal == 0) {
-                                      _getTransaksi(kodeGereja)
-                                          .whenComplete(() => setState(() {}));
-                                    }
-                                  },
-                                ),
-                                const SizedBox(
-                                  height: 25,
-                                ),
-                                _filterTanggalField(),
-                                const Divider(
-                                  height: 56,
-                                ),
-                                responsiveText("Filter Gereja", 14,
-                                    FontWeight.w700, darkText),
-                                Card(
-                                  color: primaryColor,
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 10),
-                                  child: DropdownSearch<dynamic>(
-                                    popupProps: PopupProps.menu(
-                                      showSearchBox: true,
-                                      searchFieldProps: TextFieldProps(
-                                        decoration: InputDecoration(
-                                          border: const OutlineInputBorder(),
-                                          hintText: "Cari Disini",
-                                          suffixIcon: IconButton(
-                                            onPressed: () {
-                                              _controllerDropdownFilter.clear();
-                                            },
-                                            icon: Icon(
-                                              Icons.clear,
-                                              color:
-                                                  Colors.black.withOpacity(0.5),
-                                            ),
-                                          ),
-                                        ),
-                                        controller: _controllerDropdownFilter,
-                                      ),
-                                    ),
-                                    //items: _kodeGereja,
-                                    onChanged: (val) {
-                                      
-                                    },
-                                    selectedItem: "pilih Kode Gereja",
-                                  ),
-                                ),
-                                responsiveText("Filter Transaksi", 14,
-                                    FontWeight.w700, darkText),
-                                Card(
-                                  color: primaryColor,
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 10),
-                                  child: DropdownSearch<dynamic>(
-                                    popupProps: PopupProps.menu(
-                                      showSearchBox: true,
-                                      searchFieldProps: TextFieldProps(
-                                        decoration: InputDecoration(
-                                          border: const OutlineInputBorder(),
-                                          hintText: "Cari Disini",
-                                          suffixIcon: IconButton(
-                                            onPressed: () {
-                                              _controllerDropdownFilter.clear();
-                                            },
-                                            icon: Icon(
-                                              Icons.clear,
-                                              color:
-                                                  Colors.black.withOpacity(0.5),
-                                            ),
-                                          ),
-                                        ),
-                                        controller: _controllerDropdownFilter,
-                                      ),
-                                    ),
-                                    //items: _kodeTransaksiAdded,
-                                    onChanged: (val) {},
-                                    selectedItem: "pilih Transaksi",
-                                  ),
-                                ),
-                                responsiveText("Filter Kode Perkiraan", 14,
-                                    FontWeight.w700, darkText),
-                                Card(
-                                  color: primaryColor,
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 10),
-                                  child: DropdownSearch<dynamic>(
-                                    popupProps: PopupProps.menu(
-                                      showSearchBox: true,
-                                      searchFieldProps: TextFieldProps(
-                                        decoration: InputDecoration(
-                                          border: const OutlineInputBorder(),
-                                          hintText: "Cari Disini",
-                                          suffixIcon: IconButton(
-                                            onPressed: () {
-                                              _controllerDropdownFilter.clear();
-                                            },
-                                            icon: Icon(
-                                              Icons.clear,
-                                              color:
-                                                  Colors.black.withOpacity(0.5),
-                                            ),
-                                          ),
-                                        ),
-                                        controller: _controllerDropdownFilter,
-                                      ),
-                                    ),
-                                    items: _kodePerkiraan,
-                                    onChanged: (val) {
-                                      debugPrint(val);
-                                      debugPrint(_splitString(val));
-                                      kodePerkiraanFilter = _splitString(val);
-                                      _queryTransaksiKode(kodeGereja, "",
-                                              kodePerkiraanFilter, "all")
-                                          .whenComplete(() => setState(() {}));
-                                      debugPrint(_buatKodeGabungan(val));
-                                    },
-                                    selectedItem: "pilih Kode Perkiraan",
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 10,
-                                ),
-                                ElevatedButton(
-                                  //TODO: search btn
-                                  style: ElevatedButton.styleFrom(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    _queryTransaksiKode(
-                                            kodeGereja,
-                                            kodeTransaksiFilter,
-                                            kodePerkiraanFilter,
-                                            "all")
-                                        .whenComplete(() => setState(() {}));
-                                  },
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Icon(Icons.search),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        "Cari",
-                                        style: GoogleFonts.nunito(
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 16),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          deviceWidth > 1280 ? drawerFilter() : Column(),
                         ],
                       ),
                     ],
