@@ -203,10 +203,10 @@ class NavigationSidebarX extends StatelessWidget {
         );
       },
       items: const [
-        SidebarXItem(
-          icon: Icons.home_rounded,
-          label: 'Dashboard',
-        ),
+        // SidebarXItem(
+        //   icon: Icons.home_rounded,
+        //   label: 'Dashboard',
+        // ),
         SidebarXItem(
           icon: Icons.wallet_rounded,
           label: 'Keuangan',
@@ -235,11 +235,11 @@ class NavigationScreen extends StatelessWidget {
       animation: controller,
       builder: (context, child) {
         switch (controller.selectedIndex) {
+          // case 0:
+          //   return const HomePage();
           case 0:
-            return const HomePage();
-          case 1:
             return const KeuanganControllerPage();
-          case 2:
+          case 1:
             return const AdminControllerCabangPage();
           // case 3:
           //   return const PengaturanPage();
