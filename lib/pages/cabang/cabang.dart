@@ -6,6 +6,9 @@ import 'package:kg_pusat/globals.dart';
 import 'package:kg_pusat/services/apiservices.dart';
 import 'package:kg_pusat/widgets/animations/animations.dart';
 import 'package:kg_pusat/widgets/widgets/responsivetext.dart';
+import 'package:encrypt/encrypt.dart' as ecpt;
+import 'dart:convert';
+import 'package:crypt/crypt.dart';
 
 import '../../themes/colors.dart';
 
@@ -14,6 +17,11 @@ String _namaGerejaAdmin = "";
 String _kodeGerejaAdmin = "";
 
 bool cekBuatAkun = false;
+
+encryptPassword(password) {
+  final encrypted = Crypt.sha256(password, salt: 'abcdefghijklmnop');
+  return encrypted;
+}
 
 class AdminControllerCabangPage extends StatefulWidget {
   const AdminControllerCabangPage({Key? key}) : super(key: key);
@@ -107,12 +115,13 @@ class _CabangPageState extends State<CabangPage> {
   Future postAdminGerejaCabang(kodeGerejaCabangAdmin, emailAdmin, telpAdmin,
       namaAdmin, usernameAdmin, passwordAdmin, context) async {
     var response = await servicesUserItem.inputAdminCabangGereja(
-        kodeGerejaCabangAdmin,
-        emailAdmin,
-        telpAdmin,
-        namaAdmin,
-        usernameAdmin,
-        passwordAdmin);
+      kodeGerejaCabangAdmin,
+      emailAdmin,
+      telpAdmin,
+      namaAdmin,
+      usernameAdmin,
+      encryptPassword(passwordAdmin),
+    );
 
     if (response[0] != 404) {
       return true;
@@ -413,27 +422,27 @@ class _CabangPageState extends State<CabangPage> {
                               ElevatedButton(
                                 onPressed: () {
                                   if (mounted) {
-                                    postAdminGerejaCabang(
-                                            _kodeGerejaAdmin,
-                                            _controllerEmailAdminCabang.text,
-                                            _controllerTelpAdminCabang.text,
-                                            _controllerNamaAdminCabang.text,
-                                            _controllerUsernameAdminCabang.text,
-                                            _controllerPassAdminCabang.text,
-                                            context)
-                                        .whenComplete(() {
-                                      kategoriGerejaCabang = servicesUserItem
-                                          .getCabangGereja(kodeGereja);
-                                      setState(() {});
+                                    setState(() {
+                                      postAdminGerejaCabang(
+                                              _kodeGerejaAdmin,
+                                              _controllerEmailAdminCabang.text,
+                                              _controllerTelpAdminCabang.text,
+                                              _controllerNamaAdminCabang.text,
+                                              _controllerUsernameAdminCabang
+                                                  .text,
+                                              _controllerPassAdminCabang.text,
+                                              context)
+                                          .then((value) {
+                                        _controllerNamaAdminCabang.clear();
+                                        _controllerAlamatCabang.clear();
+                                        _controllerTelpAdminCabang.clear();
+                                        _controllerUsernameAdminCabang.clear();
+                                        _controllerPassAdminCabang.clear();
+                                        _controllerEmailAdminCabang.clear();
+                                        Navigator.pop(context);
+                                      });
                                     });
-                                    _controllerNamaAdminCabang.clear();
-                                    _controllerAlamatCabang.clear();
-                                    _controllerTelpAdminCabang.clear();
-                                    _controllerUsernameAdminCabang.clear();
-                                    _controllerPassAdminCabang.clear();
-                                    _controllerEmailAdminCabang.clear();
                                   }
-                                  Navigator.pop(context);
                                 },
                                 child: const Text("Tambah"),
                               ),
@@ -454,7 +463,9 @@ class _CabangPageState extends State<CabangPage> {
       },
     ).whenComplete(() {
       kategoriGerejaCabang = servicesUserItem.getCabangGereja(kodeGereja);
-      return setState(() {});
+      return setState(() {
+        kategoriGerejaCabang = servicesUserItem.getCabangGereja(kodeGereja);
+      });
     });
   }
 
@@ -610,7 +621,9 @@ class _CabangPageState extends State<CabangPage> {
       },
     ).whenComplete(() {
       kategoriGerejaCabang = servicesUserItem.getCabangGereja(kodeGereja);
-      return setState(() {});
+      return setState(() {
+        kategoriGerejaCabang = servicesUserItem.getCabangGereja(kodeGereja);
+      });
     });
   }
 
@@ -694,7 +707,6 @@ class _CabangPageState extends State<CabangPage> {
                                     .getCabangGereja(kodeGereja);
                                 return setState(() {});
                               });
-                              ;
                               Navigator.pop(context);
                             },
                             child: const Text("Simpan"),
@@ -711,7 +723,9 @@ class _CabangPageState extends State<CabangPage> {
       },
     ).whenComplete(() {
       kategoriGerejaCabang = servicesUserItem.getCabangGereja(kodeGereja);
-      return setState(() {});
+      return setState(() {
+        kategoriGerejaCabang = servicesUserItem.getCabangGereja(kodeGereja);
+      });
     });
   }
 
@@ -933,20 +947,6 @@ class _CabangPageState extends State<CabangPage> {
                                                     padding: EdgeInsets.all(12),
                                                     shape: CircleBorder(),
                                                   ),
-                                                  onPressed: () {},
-                                                  child: const Tooltip(
-                                                    message:
-                                                        "Cek Anggota Gereja",
-                                                    child: Icon(
-                                                        Icons.people_outline),
-                                                  ),
-                                                ),
-                                                ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    padding: EdgeInsets.all(12),
-                                                    shape: CircleBorder(),
-                                                  ),
                                                   onPressed: () {
                                                     _kodeGerejaSimpan =
                                                         snapData[1][index]
@@ -1103,7 +1103,10 @@ class _DisablePageState extends State<DisablePage> {
                                   .whenComplete(() {
                                 kategoriGerejaCabangDis = servicesUserItem
                                     .getCabangGerejaDis(kodeGereja);
-                                return setState(() {});
+                                return setState(() {
+                                  kategoriGerejaCabangDis = servicesUserItem
+                                      .getCabangGerejaDis(kodeGereja);
+                                });
                               });
                               Navigator.pop(context);
                             },
@@ -1121,7 +1124,10 @@ class _DisablePageState extends State<DisablePage> {
       },
     ).whenComplete(() {
       kategoriGerejaCabangDis = servicesUserItem.getCabangGerejaDis(kodeGereja);
-      return setState(() {});
+      return setState(() {
+        kategoriGerejaCabangDis =
+            servicesUserItem.getCabangGerejaDis(kodeGereja);
+      });
     });
   }
 
